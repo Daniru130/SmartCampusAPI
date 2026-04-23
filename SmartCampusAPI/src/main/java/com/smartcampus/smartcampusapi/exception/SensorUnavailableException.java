@@ -1,0 +1,15 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.smartcampus.smartcampusapi.exception;
+
+/**
+ *
+ * @author ASUS
+ */
+public class SensorUnavailableException extends RuntimeException {
+    public SensorUnavailableException(String sensorId) {
+        super("Sensor " + sensorId + " is under MAINTENANCE and cannot accept new readings.");
+    }
+}
