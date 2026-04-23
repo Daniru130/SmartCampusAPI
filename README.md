@@ -130,11 +130,11 @@ curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
 - In-memory storage (ConcurrentHashMap)
 
 ---
-#Conceptual Report (Q&A)
+# Conceptual Report (Q&A)
 
-##Part 1: Service Architecture & Setup  
+## Part 1: Service Architecture & Setup  
 
-###Question 01 
+### Question 01 
 
 JAX-RS creates a new instance of resources for every incoming HTTP request. Known as the 
 per-request lifecycle. The instance variables inside a resource class are not shared between 
@@ -144,7 +144,7 @@ All the shared state is maintained in a centralized instance (DataStore), increa
 application’s lifetime. Also, ensure the thread is safe for concurrent access by using Concurrent 
 HashMaps instead of normal HashMaps. These methods prevent data loss or race conditions. 
 
-###Question 02 
+### Question 02 
 
 Hypermedia as the Engine of Application State (HATEOAS) is a constraint on where API 
 responses include links. Those guides users available actions , rather than user constructing 
@@ -154,9 +154,9 @@ becomes self-discoverable. Users do not need to memories or hardcode the URL str
 simply follow the links provided in the responses. This makes the process easier and reduces the 
 risk of errors from outdated documentation. 
 
-##Part 2: Room Management 
+## Part 2: Room Management 
 
-###Question 01 
+### Question 01 
 
 Returning only IDs reduces bandwidth usage and response size, However this way the client has 
 to make additional requests to retrieve actual room data, which increases the number of HTTP 
@@ -167,7 +167,7 @@ campus management API where the client needs all the data, returning full room o
 be most suitable. 
 The choice depends on the use cases, the collection size, and the datasets. 
 
-###Question 02 
+### Question 02 
 
 The Delete operation is Idempotent in this implementation. If the Delete request to delete a 
 room, if the room has no sensors, the request will be successful. But the second time the request 
@@ -175,9 +175,9 @@ will return an HTTP 404 Not Found code, since it was deleted by the first reques
 nothing else to delete for that room ID. This satisfies the definition of Idempotent, because the 
 repeated request won't have any additional effect after the first request is successful. 
 
-##Part 3: Sensor Operations & Linking  
+## Part 3: Sensor Operations & Linking  
 
-###Question 01 
+### Question 01 
 
 The @Consumes(MediaType.APPLICATION_JSON) annotation makes sure that JAX-RS only 
 accepts requests with a content-type of application/json, If the request has any other content type, 
@@ -185,7 +185,7 @@ such as plain text or application/xml, JAX-RS will automatically reject the requ
 reaches the method body. The framework will give the HTTP 415 Unsupported Media Type 
 response. This protects the method from data it cannot reserialize, preventing unexpected errors. 
 
-###Question 02 
+### Question 02 
 
 Path parameters are used to identify specific resources or a defined hierarchy, whereas query 
 parameters are better suited for optional modifiers such as searching and sorting. 
@@ -198,9 +198,9 @@ Embedding the filter in the URL path implies that each variation is a distinct r
 causes misleading architecture and Rigid URLs messy with path parameters. In contrast, 
 @QueryParam handles multiple filters cleanly and naturally. 
 
-##Part 4: Deep Nesting with Sub- Resources 
+## Part 4: Deep Nesting with Sub- Resources 
 
-###Question 01 
+### Question 01 
 
 The Sub-Resource Locator pattern enables a resource class to delegate the management of a 
 subpath of the resource to another class that manages only that specific subresource. For this 
@@ -213,9 +213,9 @@ only sensor reading resources. Secondly, it prevents a single large controller c
 all the nested paths of the system's resources. As the system grows larger and more paths need to 
 be added, it becomes increasingly difficult to manage a single controller class. 
 
-##Part 5: Advanced Error Handling, Exception Mapping & Logging  
+## Part 5: Advanced Error Handling, Exception Mapping & Logging  
 
-###Question 01 
+### Question 01 
 
 HTTP Status 404 Not Found should mean that the server is unable to find the resource 
 corresponding to the requested URL. If a client attempts to POST a new sensor where the 
@@ -228,7 +228,7 @@ this data due to some inherent errors present in the JSON body of the request.
 In this case, such a response code helps to clearly identify the source of the problem and where 
 the client needs to focus to resolve the issue. 
 
-###Question 02 
+### Question 02 
 
 Providing visibility into internal Java stack traces to API consumers outside the system raises 
 significant cybersecurity concerns. The internal details of the application exposed by stack traces 
@@ -242,7 +242,7 @@ By using a global ExceptionMapper that intercepts all unhandled exceptions and r
 generic 500 message, the API ensures no internal details are leaked to the outside world, while 
 still logging the full stack trace internally. 
 
-###Question 03 
+### Question 03 
 
 Initially, a filter will be automatically applied to all requests and responses without requiring any 
 changes to the resource class. This ensures that logging is applied consistently across all 
