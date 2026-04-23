@@ -130,4 +130,127 @@ curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
 - In-memory storage (ConcurrentHashMap)
 
 ---
+#Conceptual Report (Q&A)
+
+##Part 1: Service Architecture & Setup  
+
+###Question 01 
+
+JAX-RS creates a new instance of resources for every incoming HTTP request. Known as the 
+per-request lifecycle. The instance variables inside a resource class are not shared between 
+requests and cannot be used to store long-lived data. 
+Since each request creates a new resource instance, all persistent data is discarded immediately.  
+All the shared state is maintained in a centralized instance (DataStore), increasing the 
+application’s lifetime. Also, ensure the thread is safe for concurrent access by using Concurrent 
+HashMaps instead of normal HashMaps. These methods prevent data loss or race conditions. 
+
+###Question 02 
+
+Hypermedia as the Engine of Application State (HATEOAS) is a constraint on where API 
+responses include links. Those guides users available actions , rather than user constructing 
+URLs manually. 
+This approach is beneficial for developers when compared to static documentation. Because API 
+becomes self-discoverable. Users do not need to memories or hardcode the URL structures, 
+simply follow the links provided in the responses. This makes the process easier and reduces the 
+risk of errors from outdated documentation. 
+
+##Part 2: Room Management 
+
+###Question 01 
+
+Returning only IDs reduces bandwidth usage and response size, However this way the client has 
+to make additional requests to retrieve actual room data, which increases the number of HTTP 
+round trips and adds latency. Mainly, when it comes to large data sets.  
+Returning full room object increases the response size, but it gives all the details in a single 
+request. Reducing round trips and keeping client side logic simple. For this particular scenario, a 
+campus management API where the client needs all the data, returning full room objects would 
+be most suitable. 
+The choice depends on the use cases, the collection size, and the datasets. 
+
+###Question 02 
+
+The Delete operation is Idempotent in this implementation. If the Delete request to delete a 
+room, if the room has no sensors, the request will be successful. But the second time the request 
+will return an HTTP 404 Not Found code, since it was deleted by the first request and there is 
+nothing else to delete for that room ID. This satisfies the definition of Idempotent, because the 
+repeated request won't have any additional effect after the first request is successful. 
+
+##Part 3: Sensor Operations & Linking  
+
+###Question 01 
+
+The @Consumes(MediaType.APPLICATION_JSON) annotation makes sure that JAX-RS only 
+accepts requests with a content-type of application/json, If the request has any other content type, 
+such as plain text or application/xml, JAX-RS will automatically reject the request before it even 
+reaches the method body. The framework will give the HTTP 415 Unsupported Media Type 
+response. This protects the method from data it cannot reserialize, preventing unexpected errors. 
+
+###Question 02 
+
+Path parameters are used to identify specific resources or a defined hierarchy, whereas query 
+parameters are better suited for optional modifiers such as searching and sorting. 
+Query parameters are semantically correct for optional filtering and searching of a collection. 
+The base path /api/v1/sensors still represents the full collection of sensors, and the query 
+parameter narrows the result without changing the identity of the resource being addressed. 
+Using @QueryParam for filtering is considered superior to embedding the filter in the path for 
+these reasons. 
+Embedding the filter in the URL path implies that each variation is a distinct resource, which 
+causes misleading architecture and Rigid URLs messy with path parameters. In contrast, 
+@QueryParam handles multiple filters cleanly and naturally. 
+
+##Part 4: Deep Nesting with Sub- Resources 
+
+###Question 01 
+
+The Sub-Resource Locator pattern enables a resource class to delegate the management of a 
+subpath of the resource to another class that manages only that specific subresource. For this 
+particular project, SensorResource manages the "/api/v1/sensors" path, whereas it delegates the 
+"/api/v1/sensors/sensorId}/readings" path to the SensorReadingResource class. 
+Using the Sub-Resource Locator pattern brings a series of advantages to the system architecture. 
+Firstly, it ensures that a particular class manages only one specific resource. Indeed, 
+SensorResource will handle only sensor resources, while SensorReadingResource will handle 
+only sensor reading resources. Secondly, it prevents a single large controller class from handling 
+all the nested paths of the system's resources. As the system grows larger and more paths need to 
+be added, it becomes increasingly difficult to manage a single controller class. 
+
+##Part 5: Advanced Error Handling, Exception Mapping & Logging  
+
+###Question 01 
+
+HTTP Status 404 Not Found should mean that the server is unable to find the resource 
+corresponding to the requested URL. If a client attempts to POST a new sensor where the 
+specified roomId does not exist in the database, then the URL itself (/api/v1/sensors) is entirely 
+legitimate and the server finds no issue there. A status code of HTTP 422 Unprocessable Entity 
+would be more appropriate for the above case 
+since it suggests that the server successfully understood the client's request, the data passed in the 
+message body are in an acceptable format, and the URL is valid, but the server cannot process 
+this data due to some inherent errors present in the JSON body of the request. 
+In this case, such a response code helps to clearly identify the source of the problem and where 
+the client needs to focus to resolve the issue. 
+
+###Question 02 
+
+Providing visibility into internal Java stack traces to API consumers outside the system raises 
+significant cybersecurity concerns. The internal details of the application exposed by stack traces 
+include the names of classes, methods, lines, libraries, and their versions. The potential uses of 
+this information by attackers in malicious activities are diverse. 
+Firstly, they will be able to identify which third-party libraries and versions are used in the 
+application development process and build tailored exploits. Secondly, class and method names 
+reveal details about the application's internal workings, allowing attackers to craft input values 
+that generate new errors. 
+By using a global ExceptionMapper that intercepts all unhandled exceptions and returns only a 
+generic 500 message, the API ensures no internal details are leaked to the outside world, while 
+still logging the full stack trace internally. 
+
+###Question 03 
+
+Initially, a filter will be automatically applied to all requests and responses without requiring any 
+changes to the resource class. This ensures that logging is applied consistently across all 
+resources. If it were implemented directly into the methods, a programmer would forget to 
+implement it in a newly created method. 
+Secondly, filters support the concept of Separation of Concerns, which holds that the resource 
+method should have no connection to other concerns and should contain only pure business 
+logic. By implementing logging directly in the resource method, a programmer violates the 
+principle of clean code and makes it harder to read. Using filters allows modifying the logging 
+behaviour from one place and does not require changes to the resource class.
 
