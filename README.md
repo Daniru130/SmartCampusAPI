@@ -130,6 +130,9 @@ curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
 - In-memory storage (ConcurrentHashMap)
 
 ---
+# Video Demonstration
+https://drive.google.com/file/d/1ByvFzPJo_jMiiZCu-X2sUczCETKxbsKw/view?usp=sharing
+
 # Conceptual Report (Q&A)
 
 ## Part 1: Service Architecture & Setup  
