@@ -1,8 +1,14 @@
 # SmartCampusAPI
 
+### Name : B A D R Senarathne
+### Student ID : 20232126/w2120666
+
 ## Overview
 
 SmartCampusAPI is a RESTful web service built using JAX-RS (Jersey) and Apache Tomcat for the University of Westminster's "Smart Campus" initiative. The API manages Rooms and Sensors across campus, and maintains historical Sensor Readings. It is designed following REST architectural principles with proper resource hierarchy, HTTP status codes, error handling, and request/response logging.
+
+# Video Demonstration 
+https://drive.google.com/file/d/1ByvFzPJo_jMiiZCu-X2sUczCETKxbsKw/view?usp=sharing
 
 ### Key Features
 - Room management (create, retrieve, delete with safety checks)
@@ -130,8 +136,6 @@ curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
 - In-memory storage (ConcurrentHashMap)
 
 ---
-# Video Demonstration
-https://drive.google.com/file/d/1ByvFzPJo_jMiiZCu-X2sUczCETKxbsKw/view?usp=sharing
 
 # Conceptual Report (Q&A)
 
